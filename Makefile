@@ -3,6 +3,7 @@ setup:
 	docker compose up -d --build
 	docker compose exec app composer install
 	docker compose exec app php artisan key:generate --ansi
+	docker compose restart app
 	docker compose exec app php artisan optimize:clear
 	docker compose exec -u www-data app php artisan migrate --force
 	docker compose exec -u www-data app php artisan db:seed --force
