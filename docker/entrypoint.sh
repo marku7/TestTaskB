@@ -6,14 +6,10 @@ cd /var/www
 echo "Fixing Laravel permissions..."
 
 # Ensure required directories exist
-mkdir -p storage bootstrap/cache
-
-# Fix ownership
-chown -R www-data:www-data storage bootstrap/cache
+mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache
 
 # Fix permissions
-
-chmod -R 775 storage bootstrap/cache
+chmod -R 777 storage bootstrap/cache
 
 echo "Clearing Laravel caches..."
 php artisan optimize:clear || true

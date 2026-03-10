@@ -41,7 +41,7 @@ services:
       - "8080:80"
     environment:
       PMA_HOST: db
-      PMA_PORT: 3308
+      PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
     networks:
       - testtask_network
@@ -61,13 +61,13 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD:-root}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - testtask_db_data:/var/lib/mysql
     networks:
       - testtask_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}" ]
       interval: 10s
       timeout: 5s
       retries: 10
