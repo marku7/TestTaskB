@@ -9,6 +9,7 @@ services:
       - .:/var/www
       - /var/www/vendor
       - /var/www/bootstrap/cache
+      - /var/www/public/build
     networks:
       - testtask_network
     depends_on:
