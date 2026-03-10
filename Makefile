@@ -5,8 +5,9 @@ setup:
 	docker compose exec app php artisan key:generate --ansi
 	docker compose exec app php artisan migrate --force
 	docker compose exec app php artisan db:seed --force
-	npm install || echo "npm not found, please install node/npm to build frontend assets"
 	npm run build || true
+	sudo chown -R $(USER):$(USER) .
+
 	
 # Build images
 build:
