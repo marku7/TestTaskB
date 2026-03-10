@@ -5,8 +5,9 @@ cd /var/www
 
 echo "Fixing Laravel permissions..."
 
-# Ensure required directories exist
+# Ensure required directories and log file exist
 mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache
+touch storage/logs/laravel.log
 
 # Fix permissions
 chmod -R 777 storage bootstrap/cache
