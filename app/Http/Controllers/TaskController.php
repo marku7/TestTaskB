@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TaskController extends Controller
 {
     public function index()
     {
         $tasks = Task::latest()->paginate(10);
-        return view('tasks.index', compact('tasks'));
+
+        return Inertia::render('Tasks/Index', [
+            'tasks' => $tasks,
+        ]);
     }
 
     public function create()
     {
-        return view('tasks.create');
+        return Inertia::render('Tasks/Create');
     }
 
     public function store(Request $request)
@@ -33,12 +37,16 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        return view('tasks.show', compact('task'));
+        return Inertia::render('Tasks/Show', [
+            'task' => $task,
+        ]);
     }
 
     public function edit(Task $task)
     {
-        return view('tasks.edit', compact('task'));
+        return Inertia::render('Tasks/Edit', [
+            'task' => $task,
+        ]);
     }
 
     public function update(Request $request, Task $task)

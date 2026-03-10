@@ -1,49 +1,57 @@
-FROM php:8.2-fpm
+FROM node:20-alpine AS node-builder
 
-# System dependepncies
-RUN apt-get update && apt-get install -y \
-    git \
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY resources ./resources
+COPY vite.config.js ./
+RUN npm run build
+
+
+FROM php:8.2-fpm-alpine
+
+# Install system dependencies and PHP extensions
+RUN apk add --no-cache \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     libzip-dev \
-    zip \
+    oniguruma-dev \
     unzip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# PHP Extensions
-RUN docker-php-ext-install \
+    && docker-php-ext-install \
     pdo_mysql \
     mbstring \
-    exif \
     pcntl \
-    bcmath \
-    gd \
     zip
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www
 
-# Copy application files
+# Copy composer files first (better cache)
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-scripts \
+    --optimize-autoloader
+
+# Copy project files
 COPY . .
 
-# Install PHP dependencies (prod)
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
-    && rm -f bootstrap/cache/packages.php
+# Copy built frontend assets
+COPY --from=node-builder /app/public/build ./public/build
 
-# Permission for lara
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Autoload scripts, fix permissions
+RUN composer dump-autoload --optimize \
+    && chown -R www-data:www-data storage bootstrap/cache
 
-# Copy and make entrypoint runnable
+# Entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["entrypoint.sh"]
