@@ -31,6 +31,8 @@ Once the setup is complete, you can access the following services:
 
 - **Web Application:** [http://localhost:8000](http://localhost:8000)
 - **Database (phpMyAdmin):** [http://localhost:8080](http://localhost:8080)
+ - Username: root
+ - Password: root
 
 ## Available Commands
 
