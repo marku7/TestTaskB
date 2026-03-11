@@ -10,19 +10,25 @@ COPY vite.config.js ./
 RUN npm run build
 
 
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm
 
-# Install system dependencies and PHP extensions
-RUN apk add --no-cache \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     curl \
     libzip-dev \
-    oniguruma-dev \
+    libonig-dev \
     unzip \
     && docker-php-ext-install \
     pdo_mysql \
     mbstring \
     pcntl \
     zip
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
