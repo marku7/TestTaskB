@@ -1,32 +1,43 @@
+DOCKER_COMPOSE = docker compose
+
 setup:
 	@cp -n .env.example .env || true
-	docker compose up -d --build
-	docker compose exec app composer install
-	docker compose exec app php artisan key:generate --ansi
-	docker compose restart app
-	docker compose exec app php artisan optimize:clear
-	docker compose exec -u www-data app php artisan migrate --force
-	docker compose exec -u www-data app php artisan db:seed --force
-	npm run build || true
+	@APP_KEY="base64:$$(openssl rand -base64 32 | tr -d '\n')"; \
+	sed -i "s|^APP_KEY=.*|APP_KEY=$$APP_KEY|" .env
+	$(DOCKER_COMPOSE) up -d --build
+	$(DOCKER_COMPOSE) exec app composer install
+	$(DOCKER_COMPOSE) exec app php artisan optimize:clear
+	$(DOCKER_COMPOSE) exec -u www-data app php artisan migrate --force
+	$(DOCKER_COMPOSE) exec -u www-data app php artisan db:seed --force
+	npm install && npm run build || true
 	sudo chown -R $(USER):$(USER) .
+
+run-fresh: 
+	sed -i "s|^APP_KEY=.*|APP_KEY=$$APP_KEY|" .env
+	$(DOCKER_COMPOSE) down -v
+	$(DOCKER_COMPOSE) up -d --build
+	docker run --rm -v $(CURDIR):/app -w /app --entrypoint composer composer:latest install --no-interaction --optimize-autoloader --ignore-platform-reqs
+	$(DOCKER_COMPOSE) exec app php artisan migrate --force
+	npm install && npm run build
+
 
 	
 # Build images
 build:
-	docker compose build
+	$(DOCKER_COMPOSE) build
 
 # Start all containers
 run:
-	docker compose up -d
+	$(DOCKER_COMPOSE) up -d
 
 # Stop and remove containers
 down:
-	docker compose down -v
+	$(DOCKER_COMPOSE) down -v
 
 # Restart all containers
 restart:
-	docker compose restart
+	$(DOCKER_COMPOSE) restart
 
 # Follow logs (all services); use `make logs s=app` for a single service
 logs:
-	docker compose logs -f $(s)
+	$(DOCKER_COMPOSE) logs -f $(s)
