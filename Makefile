@@ -10,7 +10,7 @@ setup:
 	$(DOCKER_COMPOSE) exec app php artisan optimize:clear
 	$(DOCKER_COMPOSE) exec -u www-data app php artisan migrate --force
 	$(DOCKER_COMPOSE) exec -u www-data app php artisan db:seed --force
-	npm install && npm run build
+	$(DOCKER_COMPOSE) run --rm node sh -c "npm install && npm run build"
 	sudo chown -R $(USER):$(USER) .
 
 
